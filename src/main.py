@@ -58,12 +58,27 @@ class StorageManager:
         )
         self.logger.info('Archive file done.')
 
+    # 5. Ping and upload zip files to server
+    @handle_error('Failed to upload zip file')
+    def upload_archive_files(self):
+        self.ftp.wait_for_connection(
+            max_retry_count = 2,
+            retry_seconds_interval = 5
+        )
+        self.logger.info('Ping ftp connectivity done.')
+        self.ftp.upload_files(
+            from_local_directory = self.config.client.zip_folder,
+            to_remote_directory = self.config.server.zip_folder
+        )
+        self.logger.info('Upload zip file done.')
+
     # automation script pipeline runner
     def run_script_pipeline(self):
         self.download_files()
         self.separate_files()
         self.scan_viruses()
         self.archive_files_by_month()
+        self.upload_archive_files()
 
 if __name__ == '__main__':
     manager = StorageManager()

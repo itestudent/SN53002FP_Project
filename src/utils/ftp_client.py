@@ -1,4 +1,5 @@
 import os
+import time
 from ftplib import FTP
 from datetime import datetime
 
@@ -12,6 +13,23 @@ class FTPClient:
 
     def __del__(self):
         self._ftp.quit()
+
+    def _test_connection(self):
+        try:
+            self._ftp.voidcmd('NOOP')
+            return True
+        except:
+            return False
+        
+    def wait_for_connection(self, max_retry_count: int, retry_seconds_interval: int):
+        retry_count = 0
+        connection_established = self._test_connection()
+        while not connection_established and retry_count < max_retry_count:
+            time.sleep(retry_seconds_interval)
+            connection_established = self._test_connection()
+            retry_count += 1
+        if not connection_established:
+            raise Exception('failed to connect to FTP server after ' + str(retry_count) + ' retries')
 
     def list_remote(self, directory: str) -> list[str]:
         return self._ftp.nlst(directory)
@@ -47,4 +65,16 @@ class FTPClient:
             modified_timestamp = self.get_remote_modified_timestamp(from_remote_path)
             os.utime(to_local_path, (modified_timestamp, modified_timestamp))
 
-    # def 
+    def upload_files(self, from_local_directory: str, to_remote_directory: str):
+        # get files from local directory
+        files = FileService.get_files(from_local_directory)
+
+        # ensure remote directory exists
+        if to_remote_directory not in self.list_remote('.'):
+            self._ftp.mkd(to_remote_directory)
+
+        # upload each file found to specified destination
+        for file in files:
+            from_local_path = os.path.join(from_local_directory, file)
+            to_remote_path = os.path.join(to_remote_directory, file)
+            self.upload_file(from_local_path, to_remote_path)
