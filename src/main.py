@@ -1,3 +1,7 @@
+import time
+from sched import scheduler
+from datetime import datetime
+
 from utils.config_loader import load_config
 from utils.logger import get_logger, handle_error
 from utils.ftp_client import FTPClient
@@ -13,6 +17,7 @@ class StorageManager:
             self.config = load_config(StorageManager.CONFIG_PATH)
             self.ftp = FTPClient(self.config.server.ip_address, self.logger)
             self.file_service = FileService
+            self.scheduler = scheduler(time.time, time.sleep)
         except Exception as e:
             self.logger.error('Failed initialising script : ' + str(e))
 
@@ -79,8 +84,15 @@ class StorageManager:
         )
         self.logger.info('Upload zip file done.')
 
-    # automation script pipeline runner
+    # 6. Schedule automation pipeline run
+    def schedule_run(self, datetime: datetime):
+        self.logger.info('Scheduling `StorageManager` automation script pipeline to run at ' + datetime.strftime('%d/%M/%Y %H:%M:%S'))
+        self.scheduler.enterabs(datetime.timestamp(), priority=1, action=self.run_script_pipeline)
+        self.scheduler.run()
+
+    # script pipeline
     def run_script_pipeline(self):
+        self.logger.info('Running `StorageManager` automation script pipeline')
         self.connect_ftp()
         self.download_files()
         self.separate_files()
@@ -90,4 +102,4 @@ class StorageManager:
 
 if __name__ == '__main__':
     manager = StorageManager()
-    manager.run_script_pipeline()
+    manager.schedule_run(datetime.now()) # schedule a run at current date and time
