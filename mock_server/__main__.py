@@ -11,7 +11,7 @@ class MockFTPServer(FTPServer):
     @classmethod
     def get_authorizer(cls):
         authorizer = DummyAuthorizer()
-        authorizer.add_anonymous(cls.ROOT)
+        authorizer.add_anonymous(cls.ROOT, perm='elradfmw')
         return authorizer
 
     @classmethod
