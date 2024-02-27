@@ -12,7 +12,7 @@ class handle_error:
             try:
                 return func(instance, *args, **kwargs)
             except Exception as e:
-                logger.exception(self.error_message + ' : ' + str(e))
+                logger.error(self.error_message + ' : ' + str(e))
                 sys.exit(1)
         return func_decorated
 

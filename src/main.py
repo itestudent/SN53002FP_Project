@@ -8,10 +8,13 @@ class StorageManager:
     CONFIG_PATH = 'config.txt'
 
     def __init__(self):
-        self.config = load_config(StorageManager.CONFIG_PATH)
         self.logger = get_logger(StorageManager.USER_NAME)
-        self.ftp = FTPClient(self.config.server.ip_address)
-        self.file_service = FileService
+        try:    
+            self.config = load_config(StorageManager.CONFIG_PATH)
+            self.ftp = FTPClient(self.config.server.ip_address)
+            self.file_service = FileService
+        except Exception as e:
+            self.logger.error('Failed initialising script : ' + str(e))
 
     # 1. Download folder from remote
     @handle_error('Failed downloading file from ftp')
