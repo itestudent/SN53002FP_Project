@@ -1,35 +1,61 @@
 import os
 import time
+import logging
 from ftplib import FTP
 from datetime import datetime
 
 from .file_service import FileService
 
 class FTPClient:
-    def __init__(self, server_address: str):
-        self._ftp = FTP()
-        self._ftp.connect(server_address)
-        self._ftp.login('anonymous', 'ite sucks')
+    def __init__(self, server_address: str, logger: logging.Logger):
+        self.server_address = server_address
+        self.logger = logger
 
     def __del__(self):
-        self._ftp.quit()
+        self._dispose_connection()
+
+    def _dispose_connection(self):
+        try:
+            if self._ftp:
+                self._ftp.quit()
+        except:
+            pass
+        finally:
+            self._ftp = None
+
+    def _connect(self):
+        self._dispose_connection()
+        self._ftp = FTP()
+        self._ftp.connect(self.server_address)
+        self._ftp.login('anonymous', 'ite sucks')
 
     def _test_connection(self):
         try:
-            self._ftp.voidcmd('NOOP')
+            self._connect()
             return True
         except:
+            self.logger.error('Server unavailable for file upload')
             return False
         
+    def initialise_connection(self):
+        self._connect()
+        
     def wait_for_connection(self, max_retry_count: int, retry_seconds_interval: int):
+        # initial connection test
         retry_count = 0
         connection_established = self._test_connection()
+
+        # retry connection while not connected and retry hasn't reached maximum count
         while not connection_established and retry_count < max_retry_count:
+            self.logger.info('Retrying connection...')
             time.sleep(retry_seconds_interval)
             connection_established = self._test_connection()
             retry_count += 1
+
+        # check if connection has been established after retry loop
         if not connection_established:
-            raise Exception('failed to connect to FTP server after ' + str(retry_count) + ' retries')
+            raise Exception('Failed to connect to FTP server after ' + str(retry_count) + ' retries')
+        self.logger.info('Successfully established connection with FTP server')
 
     def list_remote(self, directory: str) -> list[str]:
         return self._ftp.nlst(directory)

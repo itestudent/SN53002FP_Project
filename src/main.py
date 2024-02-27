@@ -11,10 +11,15 @@ class StorageManager:
         self.logger = get_logger(StorageManager.USER_NAME)
         try:    
             self.config = load_config(StorageManager.CONFIG_PATH)
-            self.ftp = FTPClient(self.config.server.ip_address)
+            self.ftp = FTPClient(self.config.server.ip_address, self.logger)
             self.file_service = FileService
         except Exception as e:
             self.logger.error('Failed initialising script : ' + str(e))
+
+    # 0. Connect to FTP Server
+    @handle_error('Failed to connect to FTP server')
+    def connect_ftp(self):
+        self.ftp.initialise_connection()
 
     # 1. Download folder from remote
     @handle_error('Failed downloading file from ftp')
@@ -74,6 +79,7 @@ class StorageManager:
 
     # automation script pipeline runner
     def run_script_pipeline(self):
+        self.connect_ftp()
         self.download_files()
         self.separate_files()
         self.scan_viruses()
