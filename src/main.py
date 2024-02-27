@@ -40,10 +40,12 @@ class StorageManager:
     # 3. Scan and quarantine viruses
     @handle_error('Failed virus scan')
     def scan_viruses(self):
-        self.file_service.scan_and_quarantine_viruses(
+        infected_files = self.file_service.scan_and_quarantine_viruses(
             origin_directory = self.config.client.text_folder,
             quarantine_directory = self.config.client.virus_folder
         )
+        for file in infected_files:
+            self.logger.info('Infected file found: ' + file)
         self.logger.info('Scan file for virus done.')
 
     # 4. Zip files by month and file type

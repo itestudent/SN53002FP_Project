@@ -74,6 +74,7 @@ class FileService:
     
     @classmethod
     def scan_and_quarantine_viruses(cls, origin_directory: str, quarantine_directory: str):
+        viruses = []
         cls.ensure_path_exists(quarantine_directory)
 
         # loop through files
@@ -83,8 +84,11 @@ class FileService:
 
             # if contains virus trace, quarantine it
             if cls.contains_virus_trace(file_path):
+                viruses.append(file)
                 quarantine_path = os.path.join(quarantine_directory, file)
                 cls.move_file(file_path, quarantine_path)
+
+        return viruses
     #endregion
     
     #region file archiving and grouping methods
