@@ -1,0 +1,11 @@
+[global]
+Ipaddress=<x.x.x.x of the ftp server>
+server_folder=<folder to copy from the server>
+client_folder=<destination folder to copy to where the StorageManager is>
+client_image_folder=<destination folder to copy to where the StorageManager is>
+client_text_folder=<destination folder to copy to where the StorageManager is>
+client_virus_folder=<destination folder to copy to where the StorageManager is>
+client_zip_folder=<destination folder to copy to where the StorageManager is>
+server_zip_folder=<destination folder to copy to where the StorageManager is>
+
+

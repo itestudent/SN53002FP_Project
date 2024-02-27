@@ -1,0 +1,6 @@
+[project]
+name = "StorageManager"
+version = "0.0.1"
+description = "ITE SN53002FP Project"
+readme = "readme.md"
+requires-python = ">=3.9"
