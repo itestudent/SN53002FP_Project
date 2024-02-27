@@ -5,6 +5,8 @@ from mimetypes import guess_type
 from datetime import datetime
 from zipfile import ZipFile, ZIP_DEFLATED
 
+from .encryption_service import EncryptionService
+
 class FileService:
     #region utility file/directory methods
     @staticmethod
@@ -125,5 +127,5 @@ class FileService:
                 zip_file.write(file_path, os.path.basename(file_path))
             zip_file.close()
 
-            # TODO: encrypt zip files
+            EncryptionService.encrypt_file(zip_file_path, password)
     #endregion
